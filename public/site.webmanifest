@@ -1,0 +1,16 @@
+{
+  "name": "דורון אזרן — AI, שרשרת אספקה וחדשנות",
+  "short_name": "דורון אזרן",
+  "description": "סדנאות, הרצאות, ייעוץ והטמעת בינה מלאכותית לארגונים.",
+  "lang": "he",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#05060d",
+  "theme_color": "#05060d",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

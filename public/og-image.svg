@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" font-family="Heebo, Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#05060d"/>
+      <stop offset="1" stop-color="#0a0d18"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="0.85" cy="0.1" r="0.6">
+      <stop offset="0" stop-color="#008060" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#008060" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="0.1" cy="0.95" r="0.6">
+      <stop offset="0" stop-color="#5BCDDA" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#5BCDDA" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#5BCDDA"/>
+      <stop offset="1" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow1)"/>
+  <rect width="1200" height="630" fill="url(#glow2)"/>
+
+  <!-- logo mark -->
+  <g transform="translate(1000,90)">
+    <rect x="0" y="0" width="92" height="92" rx="22" fill="#008060"/>
+    <text x="46" y="62" font-size="44" font-weight="800" fill="#ffffff" text-anchor="middle">DA</text>
+  </g>
+
+  <!-- headline -->
+  <text x="100" y="300" font-size="92" font-weight="900" fill="#ffffff">דורון אזרן</text>
+  <text x="100" y="392" font-size="46" font-weight="700" fill="url(#accent)">מומחה AI · שרשרת אספקה · חדשנות</text>
+
+  <!-- tagline -->
+  <text x="100" y="468" font-size="32" font-weight="500" fill="#9aa3b2">סדנאות · הרצאות · ייעוץ והטמעת בינה מלאכותית לארגונים</text>
+
+  <!-- stat chips -->
+  <g font-size="26" font-weight="700" fill="#ffffff">
+    <rect x="100" y="516" width="220" height="58" rx="29" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.14"/>
+    <text x="210" y="553" text-anchor="middle">500+ משתתפים</text>
+    <rect x="336" y="516" width="240" height="58" rx="29" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.14"/>
+    <text x="456" y="553" text-anchor="middle">50+ ארגונים</text>
+    <rect x="592" y="516" width="210" height="58" rx="29" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.14"/>
+    <text x="697" y="553" text-anchor="middle">98% שביעות רצון</text>
+  </g>
+
+  <rect x="0" y="622" width="1200" height="8" fill="url(#accent)"/>
+</svg>

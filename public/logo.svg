@@ -1,0 +1,16 @@
+<svg viewBox="0 0 170 120" xmlns="http://www.w3.org/2000/svg" fill="none"
+     stroke="#ffffff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+  <!-- D (bold single-stroke) -->
+  <path d="M40 24 V96 M40 24 H58 C84 24 99 40 99 60 C99 80 84 96 58 96 H40" />
+  <!-- A (bold single-stroke, overlapping) -->
+  <path d="M108 96 L130 26 L152 96" />
+  <path d="M117 70 H143" />
+  <!-- microchip inside the D, thinner strokes -->
+  <g stroke-width="4.5">
+    <rect x="52" y="44" width="30" height="30" rx="4" />
+    <rect x="62" y="54" width="10" height="10" rx="2" />
+    <path d="M60 36 v8 M74 36 v8 M60 74 v8 M74 74 v8 M44 52 h8 M44 66 h8 M82 52 h8 M82 66 h8" />
+    <!-- data / motion lines to the left of the chip -->
+    <path d="M30 54 h10 M26 62 h14" />
+  </g>
+</svg>
