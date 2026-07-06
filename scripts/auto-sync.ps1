@@ -1,8 +1,8 @@
-# ─────────────────────────────────────────────────────────────────────────────
+# ============================================================================
 # Auto-sync the Doron website to GitHub (repo: Doronazran/Doronazranweb).
-# Commits any changes and pushes to origin/main.
-# Safe to run repeatedly — does nothing when there are no changes.
-# ─────────────────────────────────────────────────────────────────────────────
+# Commits any changes and pushes to origin/main. Safe to run repeatedly --
+# does nothing when there are no changes.
+# ============================================================================
 
 # This 'landing' folder IS the git repo that deploys to Vercel.
 $Repo    = "C:\Users\DoronAzran\OneDrive - Sk-Pharma Group\Desktop\Doron Agents (Momi)\landing"
@@ -26,12 +26,12 @@ if (-not $remote -or $remote -match 'YOUR_USERNAME') {
 # 2) Anything to sync?
 $changes = git status --porcelain
 if ([string]::IsNullOrWhiteSpace($changes)) {
-  Log "No changes — already up to date."
+  Log "No changes - already up to date."
   exit 0
 }
 
 # 3) Stage + commit.
-Log "Changes detected — committing."
+Log "Changes detected - committing."
 git add -A
 $msg = "Auto update website - $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
 git commit -m $msg | Out-Null
