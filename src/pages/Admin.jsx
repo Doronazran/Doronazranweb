@@ -406,7 +406,12 @@ export default function Admin() {
           <span className="admin__logo">DA</span>
           <div>
             <strong>עורך התוכן</strong>
-            <span className="admin__hint">עריכה בכל השפות · לחצו "פרסם לאתר" כדי לשמור לכל המבקרים</span>
+            <span className="admin__hint">
+              {publishState === 'saving' ? '● שומר לאתר…'
+                : publishState === 'saved' ? '✓ נשמר — חי לכל המבקרים'
+                : publishState === 'error' ? '⚠ שמירה נכשלה — לחצו "פרסם עכשיו"'
+                : 'כל שינוי נשמר אוטומטית לכל המבקרים'}
+            </span>
           </div>
         </div>
         <div className="admin__actions">
@@ -422,7 +427,7 @@ export default function Admin() {
               else flash('הפרסום נכשל: ' + (r.error || publishError || 'שגיאה'))
             }}
           >
-            {publishState === 'saving' ? 'מפרסם…' : '⬆ פרסם לאתר'}
+            {publishState === 'saving' ? 'שומר…' : publishState === 'saved' ? 'נשמר ✓' : '⬆ פרסם עכשיו'}
           </button>
           <button className="admin__btn" onClick={() => setShowSettings((s) => !s)}>⚙ הגדרות</button>
           <a className="admin__btn" href="/" target="_blank" rel="noreferrer">צפה באתר ↗</a>

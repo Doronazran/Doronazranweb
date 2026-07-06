@@ -55,6 +55,7 @@ export function LanguageProvider({ children }) {
   const [homeServices, setHomeServicesState] = useState(() => loadHomeServices())
 
   const setHomeServices = useCallback((arr) => {
+    userEditedRef.current = true
     setHomeServicesState(arr)
     try {
       if (arr == null) localStorage.removeItem(HOME_SERVICES_KEY)
@@ -65,6 +66,11 @@ export function LanguageProvider({ children }) {
   // Backend publish state (admin UI feedback).
   const [publishState, setPublishState] = useState('idle') // idle | saving | saved | error
   const [publishError, setPublishError] = useState('')
+
+  // Auto-save: true once the admin actually edits something (so hydration from
+  // the server never re-triggers a save). autoSaveTimer debounces the publish.
+  const userEditedRef = useRef(false)
+  const autoSaveTimer = useRef(null)
 
   // ── Load the globally-published content from the backend on first paint.
   // The server payload (if any) is authoritative for ALL visitors; localStorage
@@ -115,6 +121,7 @@ export function LanguageProvider({ children }) {
   )
 
   const updateField = useCallback((lng, path, value) => {
+    userEditedRef.current = true
     setOverrides((prev) => {
       const base = prev[lng] ? clone(prev[lng]) : (translations[lng] ? clone(translations[lng]) : clone(translations['en']))
       const next = { ...prev, [lng]: base }
@@ -125,6 +132,7 @@ export function LanguageProvider({ children }) {
   }, [])
 
   const addListItem = useCallback((langs, path, template) => {
+    userEditedRef.current = true
     const langList = Array.isArray(langs) ? langs : [langs]
     setOverrides((prev) => {
       const next = { ...prev }
@@ -140,6 +148,7 @@ export function LanguageProvider({ children }) {
   }, [])
 
   const removeListItem = useCallback((langs, path, index) => {
+    userEditedRef.current = true
     const langList = Array.isArray(langs) ? langs : [langs]
     setOverrides((prev) => {
       const next = { ...prev }
@@ -155,6 +164,7 @@ export function LanguageProvider({ children }) {
   }, [])
 
   const updateMedia = useCallback((key, value) => {
+    userEditedRef.current = true
     setMedia((prev) => {
       const next = { ...prev, [key]: value }
       const diff = {}
@@ -165,6 +175,7 @@ export function LanguageProvider({ children }) {
   }, [])
 
   const resetContent = useCallback(() => {
+    userEditedRef.current = true
     setOverrides({})
     saveOverrides({})
     setMedia({ ...DEFAULT_MEDIA })
@@ -178,6 +189,7 @@ export function LanguageProvider({ children }) {
   )
 
   const importContent = useCallback((json) => {
+    userEditedRef.current = true
     try {
       const data = JSON.parse(json)
       if (data.overrides) { setOverrides(data.overrides); saveOverrides(data.overrides) }
@@ -191,6 +203,7 @@ export function LanguageProvider({ children }) {
   }, [setHomeServices])
 
   const addLanguage = useCallback((meta, content) => {
+    userEditedRef.current = true
     setLanguages((prev) => {
       if (prev.find((l) => l.code === meta.code)) return prev
       const next = [...prev, meta]
@@ -208,6 +221,7 @@ export function LanguageProvider({ children }) {
 
   const removeLanguage = useCallback((code) => {
     if (code === 'he' || code === 'en') return
+    userEditedRef.current = true
     setLanguages((prev) => {
       const next = prev.filter((l) => l.code !== code)
       saveLangs(next)
@@ -257,6 +271,16 @@ export function LanguageProvider({ children }) {
       return { ok: false, error: String(e?.message || e) }
     }
   }, [overrides, media, languages, homeServices])
+
+  // Auto-save every edit to the backend (debounced) so the admin never has to
+  // click Publish. Only runs for a logged-in admin; hydration never triggers it.
+  useEffect(() => {
+    if (!userEditedRef.current) return
+    if (typeof sessionStorage === 'undefined' || !sessionStorage.getItem('admin-token')) return
+    clearTimeout(autoSaveTimer.current)
+    autoSaveTimer.current = setTimeout(() => { publishContent() }, 1200)
+    return () => clearTimeout(autoSaveTimer.current)
+  }, [overrides, media, languages, homeServices, publishContent])
 
   const value = {
     lang, setLang, toggle, t, dir: t.dir, media,
