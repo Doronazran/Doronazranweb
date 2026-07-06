@@ -34,6 +34,23 @@ function authed(req) {
 export default async function handler(req, res) {
   const redis = getRedis()
 
+  // Safe config diagnostic (booleans only, no secret values) -> /api/content?debug=1
+  const debug = (req.query && (req.query.debug === '1' || req.query.debug === 'true')) ||
+    (req.url && req.url.includes('debug=1'))
+  if (req.method === 'GET' && debug) {
+    return res.status(200).json({
+      hasAdminPassword: !!process.env.ADMIN_PASSWORD,
+      hasKv: !!redis,
+      sawEnvKeys: {
+        ADMIN_PASSWORD: !!process.env.ADMIN_PASSWORD,
+        KV_REST_API_URL: !!process.env.KV_REST_API_URL,
+        KV_REST_API_TOKEN: !!process.env.KV_REST_API_TOKEN,
+        UPSTASH_REDIS_REST_URL: !!process.env.UPSTASH_REDIS_REST_URL,
+        UPSTASH_REDIS_REST_TOKEN: !!process.env.UPSTASH_REDIS_REST_TOKEN,
+      },
+    })
+  }
+
   if (req.method === 'GET') {
     res.setHeader('Cache-Control', 'public, max-age=30, s-maxage=30, stale-while-revalidate=300')
     if (!redis) return res.status(200).json({})
