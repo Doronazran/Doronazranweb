@@ -47,6 +47,74 @@ function readAsDataUrl(file) {
   })
 }
 
+// Auto-optimize uploads: keep SVGs/small logos as-is; downscale large photos to
+// a reasonable size + JPEG so they never blow past the content-store size limit.
+async function optimizeImage(file) {
+  const dataUrl = await readAsDataUrl(file)
+  if (file.type === 'image/svg+xml' || file.size < 200 * 1024) return dataUrl
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      const maxDim = 1600
+      let { width, height } = img
+      if (Math.max(width, height) > maxDim) {
+        const s = maxDim / Math.max(width, height)
+        width = Math.round(width * s); height = Math.round(height * s)
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = width; canvas.height = height
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+      resolve(canvas.toDataURL('image/jpeg', 0.85))
+    }
+    img.onerror = () => resolve(dataUrl)
+    img.src = dataUrl
+  })
+}
+
+// Friendly image field: drag-and-drop or click to upload, or paste a URL.
+function ImageUpload({ value, onChange }) {
+  const [tab, setTab] = useState('upload')
+  const [drag, setDrag] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const isData = value && value.startsWith('data:')
+
+  const handleFile = async (file) => {
+    if (!file || !file.type.startsWith('image')) return
+    setBusy(true)
+    try { onChange(await optimizeImage(file)) } finally { setBusy(false) }
+  }
+
+  return (
+    <div className="imgup">
+      {value && (
+        <div className="imgup__preview-wrap">
+          <img src={value} alt="" className="imgup__preview" />
+          <button type="button" className="imgup__remove" title="הסר תמונה" onClick={() => onChange('')}>✕</button>
+        </div>
+      )}
+      <div className="imgup__tabs">
+        <button type="button" className={tab === 'upload' ? 'is-active' : ''} onClick={() => setTab('upload')}>⬆ העלאה</button>
+        <button type="button" className={tab === 'url' ? 'is-active' : ''} onClick={() => setTab('url')}>🔗 קישור</button>
+      </div>
+      {tab === 'upload' ? (
+        <label
+          className={`imgup__drop ${drag ? 'imgup__drop--over' : ''}`}
+          onDragOver={(e) => { e.preventDefault(); setDrag(true) }}
+          onDragLeave={() => setDrag(false)}
+          onDrop={(e) => { e.preventDefault(); setDrag(false); handleFile(e.dataTransfer.files?.[0]) }}
+        >
+          <input type="file" accept="image/*,image/svg+xml" hidden onChange={(e) => { handleFile(e.target.files?.[0]); e.target.value = '' }} />
+          <span className="imgup__drop-icon">{busy ? '⏳' : '⬆'}</span>
+          <span className="imgup__drop-main">{busy ? 'מעבד תמונה…' : 'גררו תמונה לכאן או לחצו לבחירה'}</span>
+          <span className="imgup__drop-hint">מותאם אוטומטית לגודל אופטימלי · PNG, JPG, SVG</span>
+        </label>
+      ) : (
+        <input className="fi__input" value={isData ? '' : (value ?? '')} onChange={(e) => onChange(e.target.value)} placeholder="הדביקו כתובת URL של תמונה" dir="ltr" />
+      )}
+    </div>
+  )
+}
+
 // ─── LinkedIn article importer ────────────────────────────────────────────────
 async function fetchLinkedInArticle(url) {
   const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
@@ -108,26 +176,7 @@ function FieldInput({ type, value, onChange, dir, placeholder, onImportLinkedIn 
     )
   }
   if (type === 'image-upload') {
-    const isData = value && value.startsWith('data:')
-    const urlValue = isData ? '' : (value ?? '')
-    return (
-      <div className="fi__imgup">
-        {value && <img src={value} alt="" className="fi__preview" />}
-        <div className="fi__imgup-row">
-          <label className="admin__btn admin__btn--sm">
-            ⬆ העלה
-            <input type="file" accept="image/*,image/svg+xml" hidden onChange={async (e) => {
-              const f = e.target.files?.[0]
-              if (f) { onChange(await readAsDataUrl(f)); e.target.value = '' }
-            }} />
-          </label>
-          {value && <button type="button" className="admin__btn admin__btn--sm admin__btn--danger" onClick={() => onChange('')}>✕ נקה</button>}
-        </div>
-        {!isData && (
-          <input className="fi__input" value={urlValue} onChange={(e) => onChange(e.target.value)} placeholder="URL של תמונה / לוגו" dir="ltr" />
-        )}
-      </div>
-    )
+    return <ImageUpload value={value} onChange={onChange} />
   }
   if (type === 'textarea') {
     return (
@@ -908,6 +957,20 @@ const adminCss = `
   .fi__imgup { display: flex; flex-direction: column; gap: 8px; }
   .fi__preview { max-height: 64px; max-width: 200px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); object-fit: contain; background: rgba(0,0,0,0.4); padding: 5px; }
   .fi__imgup-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* Friendly image uploader */
+  .imgup { display: flex; flex-direction: column; gap: 10px; }
+  .imgup__preview-wrap { position: relative; display: inline-block; align-self: flex-start; }
+  .imgup__preview { max-height: 120px; max-width: 100%; border-radius: 10px; border: 1px solid rgba(255,255,255,0.14); object-fit: contain; background: rgba(0,0,0,0.4); padding: 6px; display: block; }
+  .imgup__remove { position: absolute; top: -8px; inset-inline-end: -8px; width: 24px; height: 24px; border-radius: 50%; background: #e5484d; color: #fff; border: 2px solid #0b0d14; cursor: pointer; font-size: 12px; line-height: 1; display: flex; align-items: center; justify-content: center; }
+  .imgup__tabs { display: inline-flex; gap: 4px; background: rgba(255,255,255,0.05); border-radius: 9px; padding: 3px; align-self: flex-start; }
+  .imgup__tabs button { padding: 6px 16px; border-radius: 7px; border: none; background: transparent; color: rgba(255,255,255,0.6); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .imgup__tabs button.is-active { background: rgba(255,255,255,0.12); color: #fff; }
+  .imgup__drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; padding: 24px 16px; border-radius: 12px; border: 2px dashed rgba(255,255,255,0.18); background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.75); cursor: pointer; transition: all 0.18s; }
+  .imgup__drop:hover, .imgup__drop--over { border-color: var(--neon-cyan, #5bcdda); background: rgba(91,205,218,0.08); }
+  .imgup__drop-icon { font-size: 24px; }
+  .imgup__drop-main { font-size: 14px; font-weight: 600; }
+  .imgup__drop-hint { font-size: 12px; color: rgba(255,255,255,0.45); }
 
   /* multi-field */
   .mf { margin-bottom: 18px; }
