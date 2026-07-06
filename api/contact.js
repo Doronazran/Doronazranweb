@@ -58,12 +58,18 @@ export default async function handler(req, res) {
       <p style="font-size:12px;color:#888">נשלח אוטומטית מטופס יצירת הקשר באתר.</p>
     </div>`
 
-  // 1) Preferred: Resend
-  let resendError = null
+  async function fetchWithTimeout(url, opts, ms) {
+    const ctrl = new AbortController()
+    const t = setTimeout(() => ctrl.abort(), ms)
+    try { return await fetch(url, { ...opts, signal: ctrl.signal }) }
+    finally { clearTimeout(t) }
+  }
+
+  // Preferred: Resend. If configured, report its outcome directly (no hanging fallback).
   const key = process.env.RESEND_API_KEY
   if (key) {
     try {
-      const r = await fetch('https://api.resend.com/emails', {
+      const r = await fetchWithTimeout('https://api.resend.com/emails', {
         method: 'POST',
         headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -73,39 +79,29 @@ export default async function handler(req, res) {
           subject,
           html,
         }),
-      })
+      }, 8000)
       if (r.ok) return res.status(200).json({ ok: true, via: 'resend' })
-      resendError = `${r.status}: ${(await r.text().catch(() => '')).slice(0, 300)}`
-      console.error('[contact] Resend failed', resendError)
+      const detail = (await r.text().catch(() => '')).slice(0, 400)
+      console.error('[contact] Resend failed', r.status, detail)
+      return res.status(502).json({ error: 'Resend rejected the email.', status: r.status, detail })
     } catch (e) {
-      resendError = String(e?.message || e)
-      console.error('[contact] Resend error', resendError)
+      console.error('[contact] Resend error', e?.message || e)
+      return res.status(502).json({ error: 'Resend request failed.', detail: String(e?.message || e) })
     }
-  } else {
-    resendError = 'RESEND_API_KEY not set'
   }
 
-  // 2) Fallback: FormSubmit (activate once by clicking the link it emails you)
+  // Fallback (only when Resend isn't configured): FormSubmit — needs one-time activation.
   try {
-    const r = await fetch('https://formsubmit.co/ajax/' + encodeURIComponent(CONTACT_TO), {
+    const r = await fetchWithTimeout('https://formsubmit.co/ajax/' + encodeURIComponent(CONTACT_TO), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({
-        name, email, message,
-        inquiry: inquiry || '',
-        _subject: subject,
-        _template: 'table',
-        _captcha: 'false',
-      }),
-    })
+      body: JSON.stringify({ name, email, message, inquiry: inquiry || '', _subject: subject, _template: 'table', _captcha: 'false' }),
+    }, 8000)
     const data = await r.json().catch(() => ({}))
-    if (data.success === 'true' || data.success === true) {
-      return res.status(200).json({ ok: true, via: 'formsubmit' })
-    }
-    console.error('[contact] FormSubmit response', data)
+    if (data.success === 'true' || data.success === true) return res.status(200).json({ ok: true, via: 'formsubmit' })
   } catch (e) {
     console.error('[contact] FormSubmit error', e?.message || e)
   }
 
-  return res.status(502).json({ error: 'Email delivery failed.', resendError })
+  return res.status(502).json({ error: 'Email delivery failed. Configure RESEND_API_KEY.' })
 }
