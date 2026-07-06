@@ -62,6 +62,34 @@ export function LanguageProvider({ children }) {
     } catch { /* ignore */ }
   }, [])
 
+  // Backend publish state (admin UI feedback).
+  const [publishState, setPublishState] = useState('idle') // idle | saving | saved | error
+  const [publishError, setPublishError] = useState('')
+
+  // ── Load the globally-published content from the backend on first paint.
+  // The server payload (if any) is authoritative for ALL visitors; localStorage
+  // is only a per-browser cache/fallback used while offline.
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/content')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled || !data || !data.updatedAt) return
+        const ov = data.overrides || {}
+        setOverrides(ov); saveOverrides(ov)
+        const md = data.media || {}
+        setMedia({ ...DEFAULT_MEDIA, ...md }); saveMedia(md)
+        if (data.languages) { setLanguages(data.languages); saveLangs(data.languages) }
+        setHomeServicesState(data.homeServices ?? null)
+        try {
+          if (data.homeServices == null) localStorage.removeItem(HOME_SERVICES_KEY)
+          else localStorage.setItem(HOME_SERVICES_KEY, JSON.stringify(data.homeServices))
+        } catch { /* ignore */ }
+      })
+      .catch(() => { /* offline -> keep localStorage */ })
+    return () => { cancelled = true }
+  }, [])
+
   const t = useMemo(
     () => overrides[lang] || translations[lang] || translations['he'],
     [overrides, lang],
@@ -193,6 +221,43 @@ export function LanguageProvider({ children }) {
     })
   }, [])
 
+  // Verify the admin password against the server (used by the login screen).
+  // Returns { ok } on success, { ok:false, status } on failure (status 0 = offline).
+  const verifyPassword = useCallback(async (pass) => {
+    try {
+      const res = await fetch('/api/content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pass}` },
+        body: JSON.stringify({ verifyOnly: true }),
+      })
+      return res.ok ? { ok: true } : { ok: false, status: res.status }
+    } catch {
+      return { ok: false, status: 0 }
+    }
+  }, [])
+
+  // Publish the current content to the backend so it's live for ALL visitors.
+  const publishContent = useCallback(async () => {
+    setPublishState('saving'); setPublishError('')
+    const token = (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('admin-token')) || ''
+    const cleanMedia = {}
+    Object.keys(media).forEach((k) => { if (media[k] !== DEFAULT_MEDIA[k]) cleanMedia[k] = media[k] })
+    try {
+      const res = await fetch('/api/content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ overrides, media: cleanMedia, languages, homeServices }),
+      })
+      if (res.ok) { setPublishState('saved'); return { ok: true } }
+      const err = await res.json().catch(() => ({}))
+      setPublishState('error'); setPublishError(err.error || `Error ${res.status}`)
+      return { ok: false, error: err.error, status: res.status }
+    } catch (e) {
+      setPublishState('error'); setPublishError(String(e?.message || e))
+      return { ok: false, error: String(e?.message || e) }
+    }
+  }, [overrides, media, languages, homeServices])
+
   const value = {
     lang, setLang, toggle, t, dir: t.dir, media,
     languages,
@@ -202,6 +267,7 @@ export function LanguageProvider({ children }) {
     isEdited: !!overrides[lang],
     updateField, addListItem, removeListItem, updateMedia,
     resetContent, exportContent, importContent, baseFor,
+    publishContent, verifyPassword, publishState, publishError,
   }
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>

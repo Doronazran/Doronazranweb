@@ -1,3 +1,6 @@
+# Local dev CMS data (mirrors the KV store during `npm run dev`)
+.dev-content.json
+
 # Logs
 logs
 *.log
