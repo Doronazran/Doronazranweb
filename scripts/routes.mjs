@@ -21,11 +21,15 @@ export const ROUTES = [
 import fs from 'node:fs'
 
 function fromDotEnv() {
-  try {
-    const txt = fs.readFileSync(new URL('../.env', import.meta.url), 'utf8')
-    const m = txt.match(/^VITE_SITE_URL=(.+)$/m)
-    return m ? m[1].trim() : null
-  } catch { return null }
+  // Read the first VITE_SITE_URL found across the committed/local env files.
+  for (const file of ['../.env.local', '../.env', '../.env.production']) {
+    try {
+      const txt = fs.readFileSync(new URL(file, import.meta.url), 'utf8')
+      const m = txt.match(/^VITE_SITE_URL=(.+)$/m)
+      if (m) return m[1].trim()
+    } catch { /* file may not exist — try next */ }
+  }
+  return null
 }
 
 // Resolve the canonical site URL. Priority: Vercel/process env → .env → default.
