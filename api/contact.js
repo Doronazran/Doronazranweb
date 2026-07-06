@@ -59,6 +59,7 @@ export default async function handler(req, res) {
     </div>`
 
   // 1) Preferred: Resend
+  let resendError = null
   const key = process.env.RESEND_API_KEY
   if (key) {
     try {
@@ -74,10 +75,14 @@ export default async function handler(req, res) {
         }),
       })
       if (r.ok) return res.status(200).json({ ok: true, via: 'resend' })
-      console.error('[contact] Resend failed', r.status, await r.text().catch(() => ''))
+      resendError = `${r.status}: ${(await r.text().catch(() => '')).slice(0, 300)}`
+      console.error('[contact] Resend failed', resendError)
     } catch (e) {
-      console.error('[contact] Resend error', e?.message || e)
+      resendError = String(e?.message || e)
+      console.error('[contact] Resend error', resendError)
     }
+  } else {
+    resendError = 'RESEND_API_KEY not set'
   }
 
   // 2) Fallback: FormSubmit (activate once by clicking the link it emails you)
@@ -102,5 +107,5 @@ export default async function handler(req, res) {
     console.error('[contact] FormSubmit error', e?.message || e)
   }
 
-  return res.status(502).json({ error: 'Email delivery failed. Set RESEND_API_KEY (recommended) or activate FormSubmit.' })
+  return res.status(502).json({ error: 'Email delivery failed.', resendError })
 }
