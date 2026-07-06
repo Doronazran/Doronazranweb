@@ -213,6 +213,7 @@ export default function Admin() {
     resetContent, exportContent, importContent, baseFor,
     languages, addLanguage, removeLanguage,
     homeServices, setHomeServices,
+    publishContent, verifyPassword, publishState, publishError,
   } = useLang()
 
   const [authed, setAuthed] = useState(() => localStorage.getItem('admin-ok') === '1')
@@ -366,10 +367,20 @@ export default function Admin() {
   if (!authed) {
     return (
       <div className="admin-gate">
-        <form onSubmit={(e) => {
+        <form onSubmit={async (e) => {
           e.preventDefault()
-          if (pass === ADMIN_PASS) { localStorage.setItem('admin-ok', '1'); setAuthed(true) }
-          else flash('סיסמה שגויה')
+          const r = await verifyPassword(pass)
+          if (r.ok) {
+            sessionStorage.setItem('admin-token', pass)
+            localStorage.setItem('admin-ok', '1'); setAuthed(true)
+          } else if (r.status === 0) {
+            // Backend unreachable (offline / local): fall back to the client gate.
+            if (pass === ADMIN_PASS) {
+              sessionStorage.setItem('admin-token', pass)
+              localStorage.setItem('admin-ok', '1'); setAuthed(true)
+              flash('מצב לא-מקוון — עריכה מקומית בלבד')
+            } else flash('סיסמה שגויה')
+          } else flash('סיסמה שגויה')
         }}>
           <div className="admin-gate__logo">DA</div>
           <h1>עורך התוכן</h1>
@@ -395,10 +406,24 @@ export default function Admin() {
           <span className="admin__logo">DA</span>
           <div>
             <strong>עורך התוכן</strong>
-            <span className="admin__hint">עריכה גלובלית · כל השפות בו-זמנית · שומר אוטומטית</span>
+            <span className="admin__hint">עריכה בכל השפות · לחצו "פרסם לאתר" כדי לשמור לכל המבקרים</span>
           </div>
         </div>
         <div className="admin__actions">
+          <button
+            className="admin__btn"
+            disabled={publishState === 'saving'}
+            style={{ background: '#00A47C', color: '#fff', borderColor: '#00A47C', fontWeight: 700 }}
+            onClick={async () => {
+              const r = await publishContent()
+              if (r.ok) flash('פורסם! השינויים חיים לכל המבקרים ✓')
+              else if (r.status === 401) flash('הפרסום נכשל: סיסמה שגויה')
+              else if (r.status === 503) flash('הפרסום נכשל: ה-backend לא מוגדר (ראו הוראות הקמה)')
+              else flash('הפרסום נכשל: ' + (r.error || publishError || 'שגיאה'))
+            }}
+          >
+            {publishState === 'saving' ? 'מפרסם…' : '⬆ פרסם לאתר'}
+          </button>
           <button className="admin__btn" onClick={() => setShowSettings((s) => !s)}>⚙ הגדרות</button>
           <a className="admin__btn" href="/" target="_blank" rel="noreferrer">צפה באתר ↗</a>
           <button className="admin__btn" onClick={doExport}>ייצוא JSON</button>
