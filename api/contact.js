@@ -15,21 +15,6 @@ function esc(s) {
 }
 
 export default async function handler(req, res) {
-  // Safe config diagnostic (booleans only) -> GET /api/contact?debug=1
-  if (req.method === 'GET') {
-    const debug = (req.query && (req.query.debug === '1')) || (req.url && req.url.includes('debug=1'))
-    if (debug) {
-      return res.status(200).json({
-        version: 'v2-timeouts',
-        hasResendKey: !!process.env.RESEND_API_KEY,
-        contactTo: CONTACT_TO,
-        contactFrom: process.env.CONTACT_FROM || 'onboarding@resend.dev (default)',
-      })
-    }
-    res.setHeader('Allow', 'POST')
-    return res.status(405).json({ error: 'Method not allowed' })
-  }
-
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST')
     return res.status(405).json({ error: 'Method not allowed' })
