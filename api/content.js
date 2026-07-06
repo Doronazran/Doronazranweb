@@ -25,8 +25,10 @@ function getRedis() {
 }
 
 function authed(req) {
-  const expected = process.env.ADMIN_PASSWORD
-  if (!expected) return { ok: false, code: 503, msg: 'ADMIN_PASSWORD is not configured on the server.' }
+  // Prefer the server-only ADMIN_PASSWORD; fall back to VITE_ADMIN_PASSWORD so
+  // publishing works even if only the (public) UI-gate var is configured.
+  const expected = process.env.ADMIN_PASSWORD || process.env.VITE_ADMIN_PASSWORD
+  if (!expected) return { ok: false, code: 503, msg: 'No admin password configured on the server.' }
   const sent = (req.headers.authorization || '').replace(/^Bearer\s+/i, '')
   if (sent !== expected) return { ok: false, code: 401, msg: 'Wrong password.' }
   return { ok: true }
@@ -40,10 +42,13 @@ export default async function handler(req, res) {
     (req.url && req.url.includes('debug=1'))
   if (req.method === 'GET' && debug) {
     return res.status(200).json({
+      canPublish: !!(process.env.ADMIN_PASSWORD || process.env.VITE_ADMIN_PASSWORD),
       hasAdminPassword: !!process.env.ADMIN_PASSWORD,
+      hasViteAdminPassword: !!process.env.VITE_ADMIN_PASSWORD,
       hasKv: !!redis,
       sawEnvKeys: {
         ADMIN_PASSWORD: !!process.env.ADMIN_PASSWORD,
+        VITE_ADMIN_PASSWORD: !!process.env.VITE_ADMIN_PASSWORD,
         KV_REST_API_URL: !!process.env.KV_REST_API_URL,
         KV_REST_API_TOKEN: !!process.env.KV_REST_API_TOKEN,
         UPSTASH_REDIS_REST_URL: !!process.env.UPSTASH_REDIS_REST_URL,
