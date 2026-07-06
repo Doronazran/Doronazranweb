@@ -42,6 +42,22 @@ function devContentApi(adminPass) {
         }
         send(405, { error: 'Method not allowed' })
       })
+
+      // Dev mirror of /api/contact — validates and logs (no real email in dev).
+      server.middlewares.use('/api/contact', (req, res) => {
+        const send = (code, obj) => { res.statusCode = code; res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(obj)) }
+        if (req.method !== 'POST') return send(405, { error: 'Method not allowed' })
+        let body = ''
+        req.on('data', (c) => (body += c))
+        req.on('end', () => {
+          let p = {}
+          try { p = JSON.parse(body) } catch { /* empty */ }
+          if (p._hp) return send(200, { ok: true })
+          if (!p.name || !p.email || !p.message) return send(400, { error: 'Missing required fields' })
+          console.log(`[dev contact] -> ${process.env.CONTACT_TO || 'Doronazran@gmail.com'}:`, { name: p.name, email: p.email, inquiry: p.inquiry, message: p.message })
+          send(200, { ok: true, via: 'dev-log' })
+        })
+      })
     },
   }
 }

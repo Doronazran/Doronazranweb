@@ -2,14 +2,13 @@ import { useState } from 'react'
 import Reveal from './Reveal'
 import { useLang } from '../i18n/LanguageContext'
 
-const FORMSUBMIT_URL = 'https://formsubmit.co/ajax/doronazran@gmail.com'
-
 export default function Contact({ preselect }) {
   const { t } = useLang()
   const c = t.contact
   const [formData, setFormData] = useState({ name: '', email: '', message: '' })
   const [inquiry, setInquiry] = useState(preselect || '')
   const [status, setStatus] = useState('idle') // idle | sending | success | error
+  const [hp, setHp] = useState('') // honeypot (bots fill this)
 
   const handleChange = (e) =>
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
@@ -23,26 +22,20 @@ export default function Contact({ preselect }) {
       ? (c.inquiryOptions.find((o) => o.value === inquiry)?.label || inquiry)
       : ''
 
-    const subject = inquiryLabel
-      ? `[${inquiryLabel}] ${formData.name}`
-      : `Contact from ${formData.name}`
-
     try {
-      const res = await fetch(FORMSUBMIT_URL, {
+      const res = await fetch('/api/contact', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
           message: formData.message,
           inquiry: inquiryLabel,
-          _subject: subject,
-          _template: 'table',
-          _captcha: 'false',
+          _hp: hp,
         }),
       })
-      const data = await res.json()
-      if (data.success === 'true' || data.success === true) {
+      const data = await res.json().catch(() => ({}))
+      if (res.ok && data.ok) {
         setStatus('success')
         setFormData({ name: '', email: '', message: '' })
         setInquiry('')
@@ -90,6 +83,14 @@ export default function Contact({ preselect }) {
           </div>
 
           <Reveal variant="up" delay={0.15} as="form" className="contact__form" onSubmit={handleSubmit}>
+
+            {/* Honeypot — hidden from humans, bots fill it and get dropped */}
+            <input
+              type="text" name="_hp" tabIndex="-1" autoComplete="off"
+              value={hp} onChange={(e) => setHp(e.target.value)}
+              style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', opacity: 0 }}
+              aria-hidden="true"
+            />
 
             {/* Inquiry type selector */}
             <div className="contact__field">
