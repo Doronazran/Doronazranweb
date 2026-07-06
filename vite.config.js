@@ -1,18 +1,18 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import fs from 'node:fs'
 import path from 'node:path'
 
 // Dev-only backend: mirrors the production /api/content serverless function so
 // the CMS works locally. Persists to a gitignored JSON file instead of Redis.
-function devContentApi() {
+function devContentApi(adminPass) {
   const FILE = path.resolve('.dev-content.json')
   const read = () => { try { return JSON.parse(fs.readFileSync(FILE, 'utf8')) } catch { return {} } }
   return {
     name: 'dev-content-api',
     configureServer(server) {
       server.middlewares.use('/api/content', (req, res) => {
-        const expected = process.env.ADMIN_PASSWORD || process.env.VITE_ADMIN_PASSWORD || 'INSECURE_DEMO_MODE'
+        const expected = adminPass
         const send = (code, obj) => {
           res.statusCode = code
           res.setHeader('Content-Type', 'application/json')
@@ -47,8 +47,11 @@ function devContentApi() {
 }
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [react(), devContentApi()],
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, import.meta.dirname, '')
+  const adminPass = env.ADMIN_PASSWORD || env.VITE_ADMIN_PASSWORD || 'INSECURE_DEMO_MODE'
+  return {
+  plugins: [react(), devContentApi(adminPass)],
   server: {
     port: process.env.PORT ? Number(process.env.PORT) : undefined,
     strictPort: false,
@@ -69,4 +72,5 @@ export default defineConfig({
       },
     },
   },
+  }
 })
