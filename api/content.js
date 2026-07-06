@@ -35,7 +35,8 @@ export default async function handler(req, res) {
   const redis = getRedis()
 
   if (req.method === 'GET') {
-    res.setHeader('Cache-Control', 'public, max-age=30, s-maxage=30, stale-while-revalidate=300')
+    // Never cache: the CMS must reflect published changes immediately.
+    res.setHeader('Cache-Control', 'no-store, max-age=0, must-revalidate')
     if (!redis) return res.status(200).json({})
     try {
       const data = await redis.get(KEY)

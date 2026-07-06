@@ -77,11 +77,18 @@ export function LanguageProvider({ children }) {
   // is only a per-browser cache/fallback used while offline.
   useEffect(() => {
     let cancelled = false
-    fetch('/api/content')
+    fetch('/api/content', { cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (cancelled || !data || !data.updatedAt) return
-        const ov = data.overrides || {}
+        // Only accept language overrides that look like complete translation
+        // objects, so a partial/corrupt publish can never break the site.
+        const raw = data.overrides || {}
+        const ov = {}
+        Object.keys(raw).forEach((lng) => {
+          const o = raw[lng]
+          if (o && typeof o === 'object' && o.dir && o.nav && o.hero) ov[lng] = o
+        })
         setOverrides(ov); saveOverrides(ov)
         const md = data.media || {}
         setMedia({ ...DEFAULT_MEDIA, ...md }); saveMedia(md)
