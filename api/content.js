@@ -13,6 +13,7 @@
 
 import { Redis } from '@upstash/redis'
 
+// build marker: force-redeploy to pick up current env vars
 const KEY = 'site:content:v1'
 const MAX_BYTES = 900_000 // Upstash free-tier request-size safety margin
 
