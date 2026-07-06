@@ -5,7 +5,9 @@
 // Primary: Resend (set RESEND_API_KEY). Fallback: FormSubmit (needs one-time
 // activation on the target inbox). Returns { ok:true } on success.
 
-const CONTACT_TO = process.env.CONTACT_TO || 'Doronazran@gmail.com'
+// Lowercase to exactly match the Resend account owner (required while sending in
+// test mode without a verified domain — the recipient must equal the owner email).
+const CONTACT_TO = (process.env.CONTACT_TO || 'doronazran@gmail.com').toLowerCase()
 
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"]/g, (c) =>
