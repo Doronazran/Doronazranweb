@@ -290,7 +290,39 @@ export default function Admin() {
   const getVal = useCallback((langCode, path) => getIn(baseFor(langCode), path), [baseFor])
   const setVal = useCallback((langCode, path, val) => updateField(langCode, path, val), [updateField])
 
-  // ── Auto-translate one field (server-side, no browser API key needed) ──────
+  // Translate a batch of texts. Tries the server (no key needed); if the server
+  // has no key (503), falls back to a browser-direct call using the admin's
+  // pasted key. Returns string[] or null.
+  const doTranslate = useCallback(async (texts, langName) => {
+    try {
+      const res = await fetch('/api/translate', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ texts, targetLang: langName, sourceLang: 'English' }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok && Array.isArray(data.translations)) return data.translations
+      if (res.status !== 503) return null
+    } catch { /* try browser fallback */ }
+
+    // Browser fallback (needs a pasted API key in settings)
+    if (!apiKey) return 'NO_KEY'
+    try {
+      const SEP = '|~|'
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001', max_tokens: 8192,
+          messages: [{ role: 'user', content: `Translate each segment to ${langName}. Segments are separated by "${SEP}". Return ONLY the translations in order, separated by "${SEP}". No notes.\n\n${texts.join(`\n${SEP}\n`)}` }],
+        }),
+      })
+      const data = await res.json()
+      const out = (data?.content?.[0]?.text || '').split(SEP).map((s) => s.trim())
+      return texts.map((_, i) => out[i] ?? texts[i])
+    } catch { return null }
+  }, [apiKey])
+
+  // ── Auto-translate one field ───────────────────────────────────────────────
   const translateField = useCallback(async (targetCode, path, type) => {
     if (type === 'image-upload') return
     const enVal = getVal('en', path)
@@ -299,18 +331,12 @@ export default function Admin() {
     const langName = langMeta?.name || targetCode
     setTranslating(`${targetCode}:${path}`)
     try {
-      const res = await fetch('/api/translate', {
-        method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ texts: [enVal], targetLang: langName, sourceLang: 'English' }),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (res.ok && data.translations?.[0]) { setVal(targetCode, path, data.translations[0]); flash(`✓ תורגם ל-${langName}`) }
-      else if (res.status === 503) flash('🔑 הגדירו ANTHROPIC_API_KEY ב-Vercel כדי לתרגם')
+      const out = await doTranslate([enVal], langName)
+      if (out === 'NO_KEY') flash('🔑 הגדירו ANTHROPIC_API_KEY ב-Vercel, או הדביקו מפתח בהגדרות')
+      else if (out?.[0]) { setVal(targetCode, path, out[0]); flash(`✓ תורגם ל-${langName}`) }
       else flash('שגיאה בתרגום')
-    } catch {
-      flash('שגיאת רשת')
     } finally { setTranslating(null) }
-  }, [getVal, setVal, languages, flash])
+  }, [getVal, setVal, languages, flash, doTranslate])
 
   // ── Translate ALL text fields for a language (one server call) ─────────────
   const translateAll = useCallback(async (targetCode) => {
@@ -333,20 +359,14 @@ export default function Admin() {
     flash(`מתרגם ל-${langName}… (${fields.length} שדות)`)
     try {
       const texts = fields.map((f) => getIn(enContent, f.path))
-      const res = await fetch('/api/translate', {
-        method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ texts, targetLang: langName, sourceLang: 'English' }),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (res.ok && Array.isArray(data.translations)) {
-        fields.forEach((f, i) => { if (data.translations[i]) updateField(targetCode, f.path, data.translations[i]) })
+      const out = await doTranslate(texts, langName)
+      if (out === 'NO_KEY') flash('🔑 הגדירו ANTHROPIC_API_KEY ב-Vercel, או הדביקו מפתח בהגדרות')
+      else if (Array.isArray(out)) {
+        fields.forEach((f, i) => { if (out[i]) updateField(targetCode, f.path, out[i]) })
         flash(`✓ ${fields.length} שדות תורגמו ל-${langName}`)
-      } else if (res.status === 503) flash('🔑 הגדירו ANTHROPIC_API_KEY ב-Vercel')
-      else flash('שגיאה בתרגום')
-    } catch {
-      flash('שגיאת רשת')
+      } else flash('שגיאה בתרגום')
     } finally { setTranslating(null) }
-  }, [baseFor, languages, updateField, flash])
+  }, [baseFor, languages, updateField, flash, doTranslate])
 
   // ── Add a new language ─────────────────────────────────────────────────────
   const handleAddLanguage = useCallback(async (meta, autoTranslate) => {
