@@ -1,0 +1,48 @@
+name: Daily GEO refresh
+
+# Autonomous daily agent: refreshes the sitemap freshness signals and
+# re-submits the site to search engines (IndexNow). Runs on GitHub's
+# infrastructure — no local machine needed.
+
+on:
+  schedule:
+    - cron: '17 4 * * *'   # every day ~04:17 UTC
+  workflow_dispatch: {}      # allow manual runs
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-geo
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    env:
+      SITE_URL: https://doronazran.com
+      SEO_NOTIFY: '1'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Regenerate sitemap.xml + robots.txt with fresh dates
+        run: node scripts/gen-seo.mjs public
+
+      - name: Commit refreshed files (if changed)
+        run: |
+          git config user.name "GEO Bot"
+          git config user.email "geo-bot@users.noreply.github.com"
+          git add public/sitemap.xml public/robots.txt
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: daily GEO/sitemap refresh"
+            git push
+          fi
+
+      - name: Submit to search engines (IndexNow)
+        run: node scripts/notify-search.mjs
