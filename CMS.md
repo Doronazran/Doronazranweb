@@ -43,6 +43,44 @@ Deployments → latest → ⋯ → **Redeploy** (or just wait for the next auto-
 If publishing shows "backend not configured", the database (step 1) or
 `ADMIN_PASSWORD` (step 2) is missing.
 
+## AI features: auto-translate + import article from a link
+
+Two admin superpowers, both server-side (no browser API key):
+- **Auto-translate** — edit a field in English and click ✦ (or translate a whole
+  language) → `POST /api/translate` translates it. Adding a new language can
+  auto-translate the entire site.
+- **Import article from a link** — in a news/article item, paste any URL into the
+  link field and click **⬇ ייבא ותרגם אוטומטית**. `POST /api/import-article`
+  fetches the page, extracts source/date/title/image/body, and translates to
+  Hebrew + English automatically.
+
+**Both require one env var on Vercel:**
+
+| Key | Value |
+|-----|-------|
+| `ANTHROPIC_API_KEY` | your Anthropic API key (console.anthropic.com) |
+
+Add it in Settings → Environment Variables → all environments → Save → Redeploy.
+Without it these two features return "🔑 הגדירו ANTHROPIC_API_KEY".
+
+## Contact form email
+
+Contact submissions email you via `POST /api/contact` using **Resend**
+(`RESEND_API_KEY`). In Resend test mode (no verified domain) it can only send to
+the account-owner email — which is fine since the form always emails you. To send
+from a branded address, verify a domain at resend.com/domains.
+
+## Full Vercel env-var list
+
+| Key | Purpose |
+|-----|---------|
+| `VITE_SITE_URL` | Canonical domain (drives all SEO). |
+| `ADMIN_PASSWORD` | Server-side publish auth (the admin login password). |
+| `VITE_ADMIN_PASSWORD` | Admin UI gate (offline fallback). |
+| `KV_REST_API_URL` / `KV_REST_API_TOKEN` | Content store (auto-added by Upstash). |
+| `RESEND_API_KEY` | Contact-form email. |
+| `ANTHROPIC_API_KEY` | Auto-translate + article import. |
+
 ## Limits (Phase 1)
 - Uploaded images are stored inline; large images can exceed the request limit.
   Prefer image **URLs** for big assets (a later phase can add Vercel Blob for

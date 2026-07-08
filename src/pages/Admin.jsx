@@ -149,14 +149,14 @@ async function fetchLinkedInArticle(url) {
 // ─── single-field input ───────────────────────────────────────────────────────
 function FieldInput({ type, value, onChange, dir, placeholder, onImportLinkedIn }) {
   if (type === 'linkedin-import') {
-    const isLinkedIn = value && (value.includes('linkedin.com') || value.includes('linked.in'))
+    const isUrl = value && /^https?:\/\//i.test(value)
     return (
       <div className="fi__linkedin">
         <input
           className="fi__input"
           value={value ?? ''}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="https://www.linkedin.com/pulse/..."
+          placeholder="https://... (כתבה, פרסום, LinkedIn, אתר חדשות)"
           dir="ltr"
         />
         <div className="fi__linkedin-row">
@@ -165,13 +165,13 @@ function FieldInput({ type, value, onChange, dir, placeholder, onImportLinkedIn 
               ↗ פתח קישור
             </a>
           )}
-          {isLinkedIn && onImportLinkedIn && (
+          {isUrl && onImportLinkedIn && (
             <button type="button" className="admin__btn admin__btn--sm admin__btn--primary" onClick={onImportLinkedIn}>
-              ⬇ ייבוא מ-LinkedIn
+              ⬇ ייבא ותרגם אוטומטית
             </button>
           )}
         </div>
-        <span className="admin__note">הכנס לינק של מאמר LinkedIn Pulse. לחץ על "ייבוא" כדי לשאוב את התוכן אוטומטית.</span>
+        <span className="admin__note">הדביקו קישור לכתבה/פרסום. המערכת תשלוף מקור, תאריך, כותרת, תמונה ותוכן — ותתרגם אוטומטית לעברית ואנגלית.</span>
       </div>
     )
   }
@@ -744,20 +744,33 @@ export default function Admin() {
                               const items = getIn(baseFor(firstLang.code), list.path) || []
                               const val = items[i]?.[cf.key] ?? ''
                               const handleImport = cf.type === 'linkedin-import' ? async () => {
+                                if (!val || !/^https?:\/\//i.test(val)) { flash('הדביקו קישור תקין תחילה'); return }
+                                flash('⏳ מייבא ומתרגם… (עד דקה)')
                                 try {
-                                  flash('⏳ מייבא מ-LinkedIn…')
-                                  const { title, body } = await fetchLinkedInArticle(val)
-                                  if (body) {
-                                    allCodes.forEach((code) => {
-                                      if (title) updateField(code, `${list.path}.${i}.title`, title)
-                                      updateField(code, `${list.path}.${i}.body`, body)
-                                    })
-                                    flash('✓ תוכן יובא בהצלחה')
-                                  } else {
-                                    flash('לא נמצא תוכן — הדבק ידנית בשדה "תוכן מלא"')
+                                  const res = await fetch('/api/import-article', {
+                                    method: 'POST', headers: { 'content-type': 'application/json' },
+                                    body: JSON.stringify({ url: val }),
+                                  })
+                                  const data = await res.json().catch(() => ({}))
+                                  if (!res.ok) {
+                                    flash(res.status === 503 ? '🔑 הגדירו ANTHROPIC_API_KEY ב-Vercel' : `שגיאת ייבוא: ${data.error || res.status}`)
+                                    return
                                   }
+                                  allCodes.forEach((code) => {
+                                    const src = code === 'he' ? data.he : data.en
+                                    if (src) {
+                                      if (src.title) updateField(code, `${list.path}.${i}.title`, src.title)
+                                      if (src.excerpt) updateField(code, `${list.path}.${i}.excerpt`, src.excerpt)
+                                      if (src.body) updateField(code, `${list.path}.${i}.body`, src.body)
+                                      if (src.tag) updateField(code, `${list.path}.${i}.tag`, src.tag)
+                                    }
+                                    if (data.image) updateField(code, `${list.path}.${i}.image`, data.image)
+                                    if (data.date) updateField(code, `${list.path}.${i}.date`, data.date)
+                                    updateField(code, `${list.path}.${i}.sourceUrl`, data.sourceUrl || val)
+                                  })
+                                  flash('✓ הכתבה יובאה ותורגמה אוטומטית')
                                 } catch {
-                                  flash('שגיאת ייבוא — LinkedIn חוסמת גישה. הדבק את הטקסט ידנית.')
+                                  flash('שגיאת רשת בייבוא')
                                 }
                               } : undefined
                               return (
