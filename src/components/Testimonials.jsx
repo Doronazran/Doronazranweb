@@ -9,7 +9,8 @@ const PER_PAGE = 3
 export default function Testimonials() {
   const { t } = useLang()
   const tm = t.testimonials
-  const items = tm.items || []
+  // Only show complete testimonials (real quote present).
+  const items = (tm.items || []).filter((x) => x && x.quote && x.quote.trim())
 
   // group into slides of 3
   const pages = []
@@ -77,6 +78,11 @@ export default function Testimonials() {
                 <motion.div
                   key={page}
                   className="tc__grid"
+                  style={{
+                    gridTemplateColumns: `repeat(${Math.min(slide.length, 3)}, minmax(0, 1fr))`,
+                    maxWidth: slide.length < 3 ? `${slide.length * 400}px` : 'none',
+                    marginInline: 'auto',
+                  }}
                   custom={dir}
                   variants={variants}
                   initial="enter"
