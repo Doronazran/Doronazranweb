@@ -80,6 +80,7 @@ export default function NewsPage({ defaultTab = 'blog', mode }) {
           ? (isRtl ? 'מאמרים, תובנות ורעיונות מהשטח.' : 'Articles, insights and ideas from the field.')
           : (isRtl ? 'חדשות ומדיה.' : 'News and media.')}
         accent="#4f86ff"
+        bgImage={IMAGES.pageHero.news}
       />
 
       {/* Tab switcher — only shown when no mode is set */}
