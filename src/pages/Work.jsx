@@ -5,6 +5,7 @@ import Work from '../components/Work'
 import Testimonials from '../components/Testimonials'
 import CTA from '../components/CTA'
 import { useLang } from '../i18n/LanguageContext'
+import { IMAGES } from '../data/images'
 
 export default function WorkPage() {
   const { t } = useLang()
@@ -20,7 +21,7 @@ export default function WorkPage() {
           { name: h.title, path: '/work' },
         ]}
       />
-      <PageHero kicker={h.kicker} title={h.title} desc={h.desc} accent="#8b5cf6" />
+      <PageHero kicker={h.kicker} title={h.title} desc={h.desc} accent="#8b5cf6" bgImage={IMAGES.pageHero.work} />
       <Work />
       <Testimonials />
       <CTA />

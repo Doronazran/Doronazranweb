@@ -1,9 +1,12 @@
 import { motion } from 'framer-motion'
 
-export default function PageHero({ kicker, title, desc, accent = '#5BCDDA' }) {
+export default function PageHero({ kicker, title, desc, accent = '#5BCDDA', bgImage }) {
   return (
     <>
       <header className="page-hero">
+        {bgImage && (
+          <div className="page-hero__bg" style={{ backgroundImage: `url(${bgImage})` }} />
+        )}
         <div
           className="page-hero__orb"
           style={{ background: `radial-gradient(circle, ${accent}55 0%, ${accent}10 45%, transparent 70%)` }}
@@ -47,6 +50,29 @@ export default function PageHero({ kicker, title, desc, accent = '#5BCDDA' }) {
             position: relative;
             padding: 200px 56px 80px;
             overflow: hidden;
+          }
+          .page-hero__bg {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.22;
+            -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent 92%);
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent 92%);
+          }
+          .page-hero__bg::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+              linear-gradient(120deg, var(--bg) 8%, rgba(5,6,13,0.35) 55%, transparent 100%),
+              linear-gradient(to top, var(--bg) 0%, transparent 60%);
+          }
+          :root[dir="rtl"] .page-hero__bg::after {
+            background:
+              linear-gradient(240deg, var(--bg) 8%, rgba(5,6,13,0.35) 55%, transparent 100%),
+              linear-gradient(to top, var(--bg) 0%, transparent 60%);
           }
           .page-hero__orb {
             position: absolute;

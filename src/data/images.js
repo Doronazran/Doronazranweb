@@ -34,4 +34,14 @@ export const IMAGES = {
   ],
 
   portrait: pic('doron-portrait', 1000, 1250),
+
+  // Distinct atmospheric background per inner page (heavily overlaid).
+  pageHero: {
+    services: pic('page-ai-services-tech', 1920, 900),
+    work: pic('page-results-data', 1920, 900),
+    about: pic('page-about-story', 1920, 900),
+    tools: pic('page-ai-toolbox', 1920, 900),
+    news: pic('page-media-press', 1920, 900),
+    contact: pic('page-contact-connect', 1920, 900),
+  },
 }

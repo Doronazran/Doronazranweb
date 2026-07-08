@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import Page from '../components/Page'
 import Seo from '../components/Seo'
 import PageHero from '../components/PageHero'
+import { IMAGES } from '../data/images'
 import Stats from '../components/Stats'
 import Testimonials from '../components/Testimonials'
 import CTA from '../components/CTA'
@@ -86,7 +87,7 @@ export default function AboutPage() {
           { name: h.title, path: '/about' },
         ]}
       />
-      <PageHero kicker={h.kicker} title={h.title} desc={h.desc} accent="#e056b1" />
+      <PageHero kicker={h.kicker} title={h.title} desc={h.desc} accent="#e056b1" bgImage={IMAGES.pageHero.about} />
 
       <div className="about-hub__wrap">
         {sections.map((s, i) => (

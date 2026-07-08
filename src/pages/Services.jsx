@@ -5,6 +5,7 @@ import Services from '../components/Services'
 import Stats from '../components/Stats'
 import CTA from '../components/CTA'
 import { useLang } from '../i18n/LanguageContext'
+import { IMAGES } from '../data/images'
 
 export default function ServicesPage() {
   const { t } = useLang()
@@ -20,7 +21,7 @@ export default function ServicesPage() {
           { name: h.title, path: '/services' },
         ]}
       />
-      <PageHero kicker={h.kicker} title={h.title} desc={h.desc} accent="#5BCDDA" />
+      <PageHero kicker={h.kicker} title={h.title} desc={h.desc} accent="#5BCDDA" bgImage={IMAGES.pageHero.services} />
       <Services />
       <Stats />
       <CTA />

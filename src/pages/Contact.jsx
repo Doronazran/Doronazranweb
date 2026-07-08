@@ -3,6 +3,7 @@ import Page from '../components/Page'
 import Seo from '../components/Seo'
 import PageHero from '../components/PageHero'
 import ContactForm from '../components/Contact'
+import { IMAGES } from '../data/images'
 import { useLang } from '../i18n/LanguageContext'
 
 export default function ContactPage() {
@@ -22,7 +23,7 @@ export default function ContactPage() {
           { name: h.title, path: '/contact' },
         ]}
       />
-      <PageHero kicker={h.kicker} title={h.title} desc={h.desc} accent="#00A47C" />
+      <PageHero kicker={h.kicker} title={h.title} desc={h.desc} accent="#00A47C" bgImage={IMAGES.pageHero.contact} />
       <ContactForm preselect={preselect} />
     </Page>
   )
