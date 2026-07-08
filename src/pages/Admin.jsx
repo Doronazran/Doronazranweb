@@ -290,45 +290,30 @@ export default function Admin() {
   const getVal = useCallback((langCode, path) => getIn(baseFor(langCode), path), [baseFor])
   const setVal = useCallback((langCode, path, val) => updateField(langCode, path, val), [updateField])
 
-  // ── Auto-translate one field ───────────────────────────────────────────────
+  // ── Auto-translate one field (server-side, no browser API key needed) ──────
   const translateField = useCallback(async (targetCode, path, type) => {
     if (type === 'image-upload') return
-    if (!apiKey) { flash('🔑 הזינו מפתח API בהגדרות'); return }
     const enVal = getVal('en', path)
     if (!enVal) { flash('שדה האנגלית ריק — אין מה לתרגם'); return }
-
     const langMeta = languages.find((l) => l.code === targetCode)
     const langName = langMeta?.name || targetCode
-    const key = `${targetCode}:${path}`
-    setTranslating(key)
-
+    setTranslating(`${targetCode}:${path}`)
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'content-type': 'application/json',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
-        body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 512,
-          messages: [{ role: 'user', content: `Translate to ${langName}. Return ONLY the translation, no notes.\n\n${enVal}` }],
-        }),
+      const res = await fetch('/api/translate', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ texts: [enVal], targetLang: langName, sourceLang: 'English' }),
       })
-      const data = await res.json()
-      const translated = data?.content?.[0]?.text?.trim()
-      if (translated) { setVal(targetCode, path, translated); flash(`✓ תורגם ל-${langName}`) }
+      const data = await res.json().catch(() => ({}))
+      if (res.ok && data.translations?.[0]) { setVal(targetCode, path, data.translations[0]); flash(`✓ תורגם ל-${langName}`) }
+      else if (res.status === 503) flash('🔑 הגדירו ANTHROPIC_API_KEY ב-Vercel כדי לתרגם')
       else flash('שגיאה בתרגום')
     } catch {
-      flash('שגיאת רשת — בדקו מפתח API ואינטרנט')
+      flash('שגיאת רשת')
     } finally { setTranslating(null) }
-  }, [apiKey, getVal, setVal, languages, flash])
+  }, [getVal, setVal, languages, flash])
 
-  // ── Translate ALL text fields for a language ───────────────────────────────
+  // ── Translate ALL text fields for a language (one server call) ─────────────
   const translateAll = useCallback(async (targetCode) => {
-    if (!apiKey) { flash('🔑 הזינו מפתח API בהגדרות'); return }
     const langMeta = languages.find((l) => l.code === targetCode)
     const langName = langMeta?.name || targetCode
     const enContent = baseFor('en')
@@ -346,40 +331,22 @@ export default function Admin() {
 
     setTranslating(`all:${targetCode}`)
     flash(`מתרגם ל-${langName}… (${fields.length} שדות)`)
-
     try {
-      const vals = fields.map((f) => getIn(enContent, f.path))
-      const batch = vals.join('\n||||\n')
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'content-type': 'application/json',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
-        body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 8192,
-          messages: [{
-            role: 'user',
-            content: `Translate each segment to ${langName}. Keep the "||||" separators exactly. Return ONLY the translations in the same order.\n\n${batch}`,
-          }],
-        }),
+      const texts = fields.map((f) => getIn(enContent, f.path))
+      const res = await fetch('/api/translate', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ texts, targetLang: langName, sourceLang: 'English' }),
       })
-      const data = await res.json()
-      const translated = data?.content?.[0]?.text?.trim()
-      if (translated) {
-        const parts = translated.split('||||').map((s) => s.trim())
-        fields.forEach((f, i) => { if (parts[i]) updateField(targetCode, f.path, parts[i]) })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok && Array.isArray(data.translations)) {
+        fields.forEach((f, i) => { if (data.translations[i]) updateField(targetCode, f.path, data.translations[i]) })
         flash(`✓ ${fields.length} שדות תורגמו ל-${langName}`)
-      } else {
-        flash('שגיאה בתרגום')
-      }
+      } else if (res.status === 503) flash('🔑 הגדירו ANTHROPIC_API_KEY ב-Vercel')
+      else flash('שגיאה בתרגום')
     } catch {
-      flash('שגיאת רשת — בדקו מפתח API ואינטרנט')
+      flash('שגיאת רשת')
     } finally { setTranslating(null) }
-  }, [apiKey, baseFor, languages, updateField, flash])
+  }, [baseFor, languages, updateField, flash])
 
   // ── Add a new language ─────────────────────────────────────────────────────
   const handleAddLanguage = useCallback(async (meta, autoTranslate) => {
@@ -387,10 +354,10 @@ export default function Admin() {
     if (meta.dir) enContent.dir = meta.dir
     addLanguage(meta, enContent)
     flash(`✓ ${meta.name} נוספה`)
-    if (autoTranslate && apiKey) {
+    if (autoTranslate) {
       setTimeout(() => translateAll(meta.code), 300)
     }
-  }, [addLanguage, baseFor, apiKey, translateAll, flash])
+  }, [addLanguage, baseFor, translateAll, flash])
 
   // ── Export / Import ────────────────────────────────────────────────────────
   const doExport = () => {
