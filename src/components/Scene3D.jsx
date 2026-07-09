@@ -1,14 +1,17 @@
-import { useRef, useMemo, Suspense } from 'react'
+import { useRef, useMemo, useState, useEffect, Suspense } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Icosahedron, Points, PointMaterial, Float } from '@react-three/drei'
 import * as THREE from 'three'
 import { useLang } from '../i18n/LanguageContext'
 
+// Point count scales down on small screens for performance.
+const POINT_COUNT = typeof window !== 'undefined' && window.innerWidth < 768 ? 1200 : 2600
+
 // Breathing neural point-cloud: a sphere of nodes that gently pulses
 // with noise, like a thinking AI core.
 function NeuralCloud() {
   const ref = useRef()
-  const COUNT = 2800
+  const COUNT = POINT_COUNT
 
   const { positions, base } = useMemo(() => {
     const base = new Float32Array(COUNT * 3)
@@ -147,9 +150,32 @@ export default function Scene3D() {
   const { dir } = useLang()
   const offsetX = dir === 'rtl' ? -1.7 : 1.7
 
+  const wrapRef = useRef(null)
+  const [visible, setVisible] = useState(true)
+  const [reduced, setReduced] = useState(false)
+
+  // Respect users who prefer reduced motion → render a single static frame.
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const apply = () => setReduced(mq.matches)
+    apply(); mq.addEventListener?.('change', apply)
+    return () => mq.removeEventListener?.('change', apply)
+  }, [])
+
+  // Pause the render loop entirely when the hero is scrolled off-screen.
+  useEffect(() => {
+    const el = wrapRef.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), { threshold: 0.01 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
+  const frameloop = reduced ? 'demand' : (visible ? 'always' : 'never')
+
   return (
-    <div className="scene3d" aria-hidden="true">
-      <Canvas camera={{ position: [0, 0, 6.5], fov: 42 }} dpr={[1, 2]} gl={{ antialias: true, alpha: true }}>
+    <div className="scene3d" aria-hidden="true" ref={wrapRef}>
+      <Canvas camera={{ position: [0, 0, 6.5], fov: 42 }} dpr={[1, 1.5]} frameloop={frameloop} gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}>
         <Suspense fallback={null}>
           <ambientLight intensity={0.6} />
           <pointLight position={[-5, -2, 3]} intensity={2.4} color="#5BCDDA" />
