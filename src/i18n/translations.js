@@ -196,8 +196,8 @@
       name: 'דורון',
       role: 'מומחה AI · שרשרת אספקה · חדשנות',
       bio: [
-        'מומחה לבינה מלאכותית, שרשרת אספקה וחדשנות. משלב ידע אקדמי עם ניסיון מעשי בהובלת טרנספורמציות דיגיטליות בארגונים מובילים בתעשיות הפארמה, הלוגיסטיקה והייצור.',
-        'העברתי סדנאות והרצאות לאנשי שרשרת אספקה, תפעול ורכש בחברות כמו נטפים, כתר, SK Pharma, Gamida Cell ו-DSV — ופיתחתי כלי AI שעובדים בשטח: מנתח חוזים, עוקב משלוחים, מאתר ספקים ועוד.',
+        'ראש שרשרת האספקה הגלובלית ב-SK-Pharma, עם עשרות שנות ניסיון בניהול רכש ושרשרת אספקה — כולל תפקידי ניהול בכירים ב-Expander וב-Eden Springs.',
+        'מומחה לשילוב בינה מלאכותית בשרשרת האספקה. מעביר סדנאות והרצאות, כותב באופן קבוע ב-LinkedIn על AI, רכש וחדשנות — ופיתח כלי AI שעובדים בשטח: מנתח חוזים, עוקב משלוחים, מאתר ספקים ועוד.',
         'המטרה שלי אחת: להפוך את ה-AI ממילת באזז למנוע צמיחה מדיד בכל ארגון.',
       ],
       cta: 'בואו נכיר',
@@ -440,8 +440,8 @@
       name: 'Doron',
       role: 'AI · Supply Chain · Innovation Expert',
       bio: [
-        'An expert in AI, supply chain and innovation. I blend academic knowledge with hands-on experience leading digital transformations at leading organizations across pharma, logistics and manufacturing.',
-        'I have delivered workshops and talks to supply chain, operations and procurement leaders at companies like Netafim, Keter, SK Pharma, Gamida Cell and DSV — and built AI tools that work on the ground: a contract analyzer, shipment tracker, supplier finder and more.',
+        'Head of Global Supply Chain at SK-Pharma, with decades of experience in procurement and supply chain management — including senior leadership roles at Expander and Eden Springs.',
+        'An expert in bringing AI into the supply chain. I deliver workshops and talks, write regularly on LinkedIn about AI, procurement and innovation — and build AI tools that work on the ground: a contract analyzer, shipment tracker, supplier finder and more.',
         'My goal is singular: turn AI from a buzzword into a measurable growth engine in every organization.',
       ],
       cta: "Let's Connect",
