@@ -15,6 +15,18 @@ async function fetchWithTimeout(url, opts, ms) {
   finally { clearTimeout(t) }
 }
 
+// Free translation (no key) via Google's public gtx endpoint.
+async function freeT(text, code) {
+  if (!text || !text.trim()) return text
+  try {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${encodeURIComponent(code)}&dt=t&q=${encodeURIComponent(text.slice(0, 1800))}`
+    const r = await fetchWithTimeout(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, 10000)
+    if (!r.ok) return text
+    const data = await r.json()
+    return (data[0] || []).map((s) => s[0]).join('') || text
+  } catch { return text }
+}
+
 function meta(html, prop) {
   const patterns = [
     new RegExp(`<meta[^>]+(?:property|name)=["']${prop}["'][^>]+content=["']([^"']*)["']`, 'i'),
@@ -63,11 +75,15 @@ export default async function handler(req, res) {
   // No AI key → still return the extracted content (source/title/image/body),
   // just untranslated. The admin can translate it with the ✦ button afterward.
   if (!key) {
-    const extracted = { title: ogTitle, excerpt: ogDesc, body: text.slice(0, 6000), tag: '' }
+    const body6k = text.slice(0, 6000)
+    const [heTitle, enTitle, heExcerpt, enExcerpt] = await Promise.all([
+      freeT(ogTitle, 'he'), freeT(ogTitle, 'en'), freeT(ogDesc, 'he'), freeT(ogDesc, 'en'),
+    ])
     return res.status(200).json({
       image, sourceUrl: url, source, date: publishedRaw || '',
-      translated: false,
-      he: extracted, en: extracted,
+      translated: true,
+      he: { title: heTitle, excerpt: heExcerpt, body: body6k, tag: '' },
+      en: { title: enTitle, excerpt: enExcerpt, body: body6k, tag: '' },
     })
   }
 
