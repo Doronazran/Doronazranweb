@@ -293,11 +293,11 @@ export default function Admin() {
   // Translate a batch of texts. Tries the server (no key needed); if the server
   // has no key (503), falls back to a browser-direct call using the admin's
   // pasted key. Returns string[] or null.
-  const doTranslate = useCallback(async (texts, langName) => {
+  const doTranslate = useCallback(async (texts, langName, langCode) => {
     try {
       const res = await fetch('/api/translate', {
         method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ texts, targetLang: langName, sourceLang: 'English' }),
+        body: JSON.stringify({ texts, targetLang: langName, targetCode: langCode, sourceLang: 'English' }),
       })
       const data = await res.json().catch(() => ({}))
       if (res.ok && Array.isArray(data.translations)) return data.translations
@@ -331,7 +331,7 @@ export default function Admin() {
     const langName = langMeta?.name || targetCode
     setTranslating(`${targetCode}:${path}`)
     try {
-      const out = await doTranslate([enVal], langName)
+      const out = await doTranslate([enVal], langName, targetCode)
       if (out === 'NO_KEY') flash('🔑 הגדירו ANTHROPIC_API_KEY ב-Vercel, או הדביקו מפתח בהגדרות')
       else if (out?.[0]) { setVal(targetCode, path, out[0]); flash(`✓ תורגם ל-${langName}`) }
       else flash('שגיאה בתרגום')
@@ -359,7 +359,7 @@ export default function Admin() {
     flash(`מתרגם ל-${langName}… (${fields.length} שדות)`)
     try {
       const texts = fields.map((f) => getIn(enContent, f.path))
-      const out = await doTranslate(texts, langName)
+      const out = await doTranslate(texts, langName, targetCode)
       if (out === 'NO_KEY') flash('🔑 הגדירו ANTHROPIC_API_KEY ב-Vercel, או הדביקו מפתח בהגדרות')
       else if (Array.isArray(out)) {
         fields.forEach((f, i) => { if (out[i]) updateField(targetCode, f.path, out[i]) })
