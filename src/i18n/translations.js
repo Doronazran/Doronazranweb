@@ -61,10 +61,10 @@
       title: 'חדשות ותובנות',
       readMore: 'קראו עוד',
       items: [
-        { tag: 'בינה מלאכותית', date: '15 ביוני 2026', title: 'איך AI משנה את שרשרת האספקה ב-2026', excerpt: 'מבט על המגמות שמעצבות מחדש את עולם הלוגיסטיקה והתפעול.', image: '', body: '', sourceUrl: '', lang: 'he', author: 'דורון אזרן', authorRole: 'מומחה AI ושרשרת אספקה' },
-        { tag: 'אוטומציה', date: '2 ביוני 2026', title: '5 תהליכים שכל ארגון צריך לאוטמט עכשיו', excerpt: 'מדריך פרקטי לזיהוי ההזדמנויות הראשונות לאוטומציה.', image: '', body: '', sourceUrl: '', lang: 'he', author: 'דורון אזרן', authorRole: 'מומחה AI ושרשרת אספקה' },
-        { tag: 'חדשנות', date: '20 במאי 2026', title: 'מבאזז לערך: להטמיע AI שבאמת עובד', excerpt: 'הדרך מהרעיון ליישום שמייצר תוצאות מדידות.', image: '', body: '', sourceUrl: '', lang: 'he', author: 'דורון אזרן', authorRole: 'מומחה AI ושרשרת אספקה' },
-        { tag: 'מנהיגות', date: '8 במאי 2026', title: 'להוביל צוות בעידן הבינה המלאכותית', excerpt: 'כיצד מנהלים מובילים שינוי תרבותי לצד שינוי טכנולוגי.', image: '', body: '', sourceUrl: '', lang: 'he', author: 'דורון אזרן', authorRole: 'מומחה AI ושרשרת אספקה' },
+        { tag: 'שרשרת אספקה', date: '', title: 'עתיד ה-AI בניהול שרשרת האספקה', excerpt: 'מבט על האופן שבו בינה מלאכותית מעצבת מחדש את ניהול שרשרת האספקה.', image: '', body: '', sourceUrl: 'https://www.linkedin.com/pulse/future-ai-supply-chain-management-doron-azran-cmlaf', lang: 'he', author: 'דורון אזרן', authorRole: 'Head of Global Supply Chain, SK-Pharma' },
+        { tag: 'בינה מלאכותית', date: '', title: 'בינה מלאכותית יוצרת והמהפכה בשרשרת האספקה', excerpt: 'צלילה לעומק אל עתיד שרשרת האספקה בעידן ה-Generative AI.', image: '', body: '', sourceUrl: 'https://www.linkedin.com/pulse/generative-ai-supply-chain-revolution-deep-dive-future-doron-azran-dulvf', lang: 'he', author: 'דורון אזרן', authorRole: 'Head of Global Supply Chain, SK-Pharma' },
+        { tag: 'רכש', date: '', title: 'אינפורמטיקה של רכש: העצמת מנהלי רכש עם AI', excerpt: 'כיצד בינה מלאכותית וטכנולוגיות מתקדמות משנות את מקצוע הרכש.', image: '', body: '', sourceUrl: 'https://www.linkedin.com/pulse/procurement-informatics-empowering-purchasing-managers-doron-azran', lang: 'he', author: 'דורון אזרן', authorRole: 'Head of Global Supply Chain, SK-Pharma' },
+        { tag: 'הדרכה', date: '', title: 'הכשרת כוח האדם בשרשרת האספקה לאימוץ AI', excerpt: 'מדריך להטמעת מיומנויות בינה מלאכותית בצוותי שרשרת אספקה.', image: '', body: '', sourceUrl: 'https://www.linkedin.com/pulse/upskilling-supply-chain-workforce-ai-adoption-doron-azran-0yogf', lang: 'he', author: 'דורון אזרן', authorRole: 'Head of Global Supply Chain, SK-Pharma' },
       ],
     },
     services: {
@@ -313,10 +313,10 @@
       title: 'News & Insights',
       readMore: 'Read More',
       items: [
-        { tag: 'Artificial Intelligence', date: 'June 15, 2026', title: 'How AI Is Reshaping Supply Chains in 2026', excerpt: 'A look at the trends redefining logistics and operations.', image: '', body: '', sourceUrl: '', lang: 'en', author: 'Doron Azran', authorRole: 'AI & Supply Chain Expert' },
-        { tag: 'Automation', date: 'June 2, 2026', title: '5 Processes Every Organization Should Automate Now', excerpt: 'A practical guide to spotting your first automation wins.', image: '', body: '', sourceUrl: '', lang: 'en', author: 'Doron Azran', authorRole: 'AI & Supply Chain Expert' },
-        { tag: 'Innovation', date: 'May 20, 2026', title: 'From Buzz to Value: Deploying AI That Actually Works', excerpt: 'The path from idea to implementation that delivers measurable results.', image: '', body: '', sourceUrl: '', lang: 'en', author: 'Doron Azran', authorRole: 'AI & Supply Chain Expert' },
-        { tag: 'Leadership', date: 'May 8, 2026', title: 'Leading a Team in the Age of AI', excerpt: 'How leaders drive cultural change alongside technological change.', image: '', body: '', sourceUrl: '', lang: 'en', author: 'Doron Azran', authorRole: 'AI & Supply Chain Expert' },
+        { tag: 'Supply Chain', date: '', title: 'The Future of AI in Supply Chain Management', excerpt: 'A look at how artificial intelligence is reshaping supply chain management.', image: '', body: '', sourceUrl: 'https://www.linkedin.com/pulse/future-ai-supply-chain-management-doron-azran-cmlaf', lang: 'en', author: 'Doron Azran', authorRole: 'Head of Global Supply Chain, SK-Pharma' },
+        { tag: 'Artificial Intelligence', date: '', title: 'Generative AI and the Supply Chain Revolution', excerpt: 'A deep dive into the future of the supply chain in the era of generative AI.', image: '', body: '', sourceUrl: 'https://www.linkedin.com/pulse/generative-ai-supply-chain-revolution-deep-dive-future-doron-azran-dulvf', lang: 'en', author: 'Doron Azran', authorRole: 'Head of Global Supply Chain, SK-Pharma' },
+        { tag: 'Procurement', date: '', title: 'Procurement Informatics: Empowering Purchasing Managers with AI', excerpt: 'How AI and advanced technologies are transforming the procurement profession.', image: '', body: '', sourceUrl: 'https://www.linkedin.com/pulse/procurement-informatics-empowering-purchasing-managers-doron-azran', lang: 'en', author: 'Doron Azran', authorRole: 'Head of Global Supply Chain, SK-Pharma' },
+        { tag: 'Enablement', date: '', title: 'Upskilling the Supply Chain Workforce for AI Adoption', excerpt: 'A guide to embedding AI skills across supply chain teams.', image: '', body: '', sourceUrl: 'https://www.linkedin.com/pulse/upskilling-supply-chain-workforce-ai-adoption-doron-azran-0yogf', lang: 'en', author: 'Doron Azran', authorRole: 'Head of Global Supply Chain, SK-Pharma' },
       ],
     },
     services: {
