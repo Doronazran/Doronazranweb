@@ -9,8 +9,11 @@ const PER_PAGE = 3
 export default function Testimonials() {
   const { t } = useLang()
   const tm = t.testimonials
-  // Only show complete testimonials (real quote present).
-  const items = (tm.items || []).filter((x) => x && x.quote && x.quote.trim())
+  const all = tm.items || []
+  // Quoted testimonials go in the carousel; the rest are shown as real endorsers
+  // (name / role / company) — never with a fabricated quote.
+  const items = all.filter((x) => x && x.quote && x.quote.trim())
+  const endorsers = all.filter((x) => x && (!x.quote || !x.quote.trim()) && x.name)
 
   // group into slides of 3
   const pages = []
@@ -38,7 +41,7 @@ export default function Testimonials() {
     return () => clearInterval(timer)
   }, [paused, totalPages])
 
-  if (!items.length) return null
+  if (!items.length && !endorsers.length) return null
 
   const slide = pages[page] || []
 
