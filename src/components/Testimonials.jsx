@@ -157,6 +157,24 @@ export default function Testimonials() {
               />
             </div>
           )}
+
+          {endorsers.length > 0 && (
+            <Reveal variant="up" delay={0.1} className="tc__endorsers">
+              <div className="tc__endorsers-label">{isRtl ? 'ממליצים בכירים נוספים' : 'More senior endorsers'}</div>
+              <div className="tc__endorsers-grid">
+                {endorsers.map((e, i) => (
+                  <div key={i} className="tc__endorser">
+                    <div className="tc__avatar tc__avatar--initial tc__endorser-avatar">{e.name.charAt(0)}</div>
+                    <div className="tc__endorser-info">
+                      <div className="tc__endorser-name">{e.name}</div>
+                      <div className="tc__endorser-role">{e.role}</div>
+                    </div>
+                    <svg className="tc__endorser-check" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+                  </div>
+                ))}
+              </div>
+            </Reveal>
+          )}
         </div>
       </section>
 
@@ -285,6 +303,26 @@ export default function Testimonials() {
           transform-origin: left;
         }
         :root[dir="rtl"] .tc__progress-bar { transform-origin: right; }
+
+        .tc__endorsers { margin-top: 44px; }
+        .tc__endorsers-label {
+          text-align: center; font-size: 12px; font-weight: 600; letter-spacing: 0.1em;
+          text-transform: uppercase; color: var(--ink-muted); margin-bottom: 20px;
+        }
+        .tc__endorsers-grid {
+          display: grid; grid-template-columns: repeat(auto-fill, minmax(248px, 1fr)); gap: 12px;
+        }
+        .tc__endorser {
+          display: flex; align-items: center; gap: 12px; padding: 13px 16px;
+          background: var(--surface); border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 14px; transition: border-color 0.2s;
+        }
+        .tc__endorser:hover { border-color: rgba(0,164,124,0.4); }
+        .tc__endorser-avatar { width: 38px; height: 38px; font-size: 15px; }
+        .tc__endorser-info { flex: 1; min-width: 0; }
+        .tc__endorser-name { font-weight: 700; color: var(--ink); font-size: 13px; }
+        .tc__endorser-role { font-size: 11px; color: var(--ink-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tc__endorser-check { color: var(--primary-hover, #00A47C); flex-shrink: 0; }
 
         @media (max-width: 900px) { .tc__grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 580px) {
