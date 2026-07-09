@@ -8,7 +8,8 @@ const pic = (seed, w = 1200, h = 900) =>
 
 export const IMAGES = {
   hero: pic('doron-ai-supplychain-hero', 1920, 1280),
-  heroPortrait: pic('doron-keynote-stage', 1100, 1400),
+  // Branded placeholder (not a stock stranger). Swap for a real photo via admin.
+  heroPortrait: '/portrait-placeholder.svg',
 
   services: [
     pic('svc-ai-workshop'),
@@ -33,7 +34,7 @@ export const IMAGES = {
     pic('news-leadership', 1200, 800),
   ],
 
-  portrait: pic('doron-portrait', 1000, 1250),
+  portrait: '/portrait-placeholder.svg',
 
   // Distinct atmospheric background per inner page (heavily overlaid).
   pageHero: {
