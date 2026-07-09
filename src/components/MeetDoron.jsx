@@ -4,23 +4,38 @@ import { useLang } from '../i18n/LanguageContext'
 import { IMAGES } from '../data/images'
 
 export default function MeetDoron() {
-  const { t } = useLang()
+  const { t, media } = useLang()
   const m = t.meet
+  // Use the admin-managed portrait; fall back to the default.
+  const portrait = media?.portrait || IMAGES.portrait
+  const isPlaceholder = !portrait || portrait.includes('portrait-placeholder')
 
   return (
     <>
       <section id="meet" className="section meet">
         <div className="section__inner meet__grid">
           <Reveal variant="left" className="meet__portrait magnetic">
-            <div className="meet__portrait-inner">
-              <div className="meet__photo" style={{ backgroundImage: `url(${IMAGES.portrait})` }} />
-              <div className="meet__duotone" />
-              <div className="meet__meet">
-                <span className="meet__meet-kicker">{m.kicker}</span>
-                <span className="meet__meet-name">{m.name}</span>
+            {isPlaceholder ? (
+              /* Clean branded panel when no real photo is set — looks intentional. */
+              <div className="meet__portrait-inner meet__brand">
+                <div className="meet__brand-ring" />
+                <div className="meet__brand-mono">דא</div>
+                <div className="meet__meet">
+                  <span className="meet__meet-kicker">{m.kicker}</span>
+                  <span className="meet__meet-name">{m.name}</span>
+                </div>
               </div>
-              <div className="meet__scanline" />
-            </div>
+            ) : (
+              <div className="meet__portrait-inner">
+                <div className="meet__photo" style={{ backgroundImage: `url(${portrait})` }} />
+                <div className="meet__duotone" />
+                <div className="meet__meet">
+                  <span className="meet__meet-kicker">{m.kicker}</span>
+                  <span className="meet__meet-name">{m.name}</span>
+                </div>
+                <div className="meet__scanline" />
+              </div>
+            )}
           </Reveal>
 
           <div className="meet__content">
@@ -137,6 +152,36 @@ export default function MeetDoron() {
           mix-blend-mode: overlay;
           opacity: 0.4;
           pointer-events: none;
+        }
+
+        /* Clean branded panel (used until a real photo is uploaded via admin). */
+        .meet__brand {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background:
+            radial-gradient(120% 80% at 28% 14%, rgba(0,128,96,0.32), transparent 55%),
+            radial-gradient(120% 90% at 86% 100%, rgba(139,92,246,0.24), transparent 55%),
+            linear-gradient(160deg, #0a0d18 0%, #05060d 100%);
+        }
+        .meet__brand-ring {
+          position: absolute;
+          width: 62%;
+          aspect-ratio: 1;
+          border-radius: 50%;
+          border: 1px solid rgba(255,255,255,0.12);
+          box-shadow: inset 0 0 90px rgba(91,205,218,0.14);
+        }
+        .meet__brand-mono {
+          font-family: var(--font-display);
+          font-weight: 900;
+          font-size: clamp(120px, 20vw, 200px);
+          letter-spacing: -0.04em;
+          background: linear-gradient(135deg, var(--neon-cyan), var(--primary));
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          z-index: 1;
         }
 
         .meet__name-accent {
