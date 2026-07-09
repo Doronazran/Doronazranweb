@@ -170,28 +170,6 @@ export const schema = [
     ],
   },
   {
-    title: 'המלצות (Testimonials)',
-    pages: ['home', 'work', 'about'],
-    fields: [
-      { path: 'testimonials.tag', label: 'תגית' },
-      { path: 'testimonials.title', label: 'כותרת' },
-    ],
-    lists: [
-      {
-        path: 'testimonials.items',
-        label: 'המלצות',
-        template: { quote: 'ציטוט', name: 'שם', role: 'תפקיד', avatar: '', companyLogo: '' },
-        itemFields: [
-          { key: 'quote', label: 'ציטוט', type: 'textarea' },
-          { key: 'name', label: 'שם' },
-          { key: 'role', label: 'תפקיד' },
-          { key: 'avatar', label: 'תמונת ממליץ', type: 'image-upload' },
-          { key: 'companyLogo', label: 'לוגו חברה', type: 'image-upload' },
-        ],
-      },
-    ],
-  },
-  {
     title: 'אודות / הכירו (About)',
     pages: ['home', 'about'],
     fields: [
