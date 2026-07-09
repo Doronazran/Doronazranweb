@@ -22,6 +22,7 @@ import Team from './pages/Team'
 import TeamMember from './pages/TeamMember'
 import Admin from './pages/Admin'
 import NotFound from './pages/NotFound'
+import VersionWatcher from './components/VersionWatcher'
 import './App.css'
 
 function App() {
@@ -70,6 +71,7 @@ function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </motion.div>
+      <VersionWatcher />
     </Layout>
   )
 }

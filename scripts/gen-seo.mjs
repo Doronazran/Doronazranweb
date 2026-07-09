@@ -53,4 +53,6 @@ Sitemap: ${SITE}/sitemap.xml
 fs.mkdirSync(OUT, { recursive: true })
 fs.writeFileSync(path.join(OUT, 'sitemap.xml'), sitemap)
 fs.writeFileSync(path.join(OUT, 'robots.txt'), robots)
-console.log(`[gen-seo] wrote robots.txt + sitemap.xml (${ROUTES.length} urls) for ${SITE} -> ${OUT}/`)
+// Build stamp so the running app can detect a new deploy and refresh itself.
+fs.writeFileSync(path.join(OUT, 'version.json'), JSON.stringify({ v: Date.now() }))
+console.log(`[gen-seo] wrote robots.txt + sitemap.xml (${ROUTES.length} urls) + version.json for ${SITE} -> ${OUT}/`)
