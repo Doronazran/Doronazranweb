@@ -54,14 +54,15 @@ Two admin superpowers, both server-side (no browser API key):
   fetches the page, extracts source/date/title/image/body, and translates to
   Hebrew + English automatically.
 
-**Both require one env var on Vercel:**
+**Both work out of the box — no configuration needed** (they use a free
+translation service by default). For higher-quality translation, optionally add:
 
 | Key | Value |
 |-----|-------|
-| `ANTHROPIC_API_KEY` | your Anthropic API key (console.anthropic.com) |
+| `ANTHROPIC_API_KEY` | your Anthropic API key (console.anthropic.com) — optional |
 
-Add it in Settings → Environment Variables → all environments → Save → Redeploy.
-Without it these two features return "🔑 הגדירו ANTHROPIC_API_KEY".
+When set, translation upgrades from the free engine to Claude. Add it in
+Settings → Environment Variables → Save → Redeploy.
 
 ## Contact form email
 
