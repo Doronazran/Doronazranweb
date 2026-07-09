@@ -33,7 +33,6 @@ export default async function handler(req, res) {
   if (!/^https?:\/\//i.test(url)) return res.status(400).json({ error: 'A valid URL is required' })
 
   const key = process.env.ANTHROPIC_API_KEY
-  if (!key) return res.status(503).json({ error: 'ANTHROPIC_API_KEY is not configured on the server.' })
 
   // 1) Fetch the page
   let html = ''
@@ -44,12 +43,14 @@ export default async function handler(req, res) {
     return res.status(502).json({ error: 'Could not fetch the URL.', detail: String(e?.message || e) })
   }
 
-  // 2) Structured hints from meta tags
+  // 2) Structured hints from meta tags (no AI needed)
   const image = meta(html, 'og:image') || meta(html, 'twitter:image')
   const source = meta(html, 'og:site_name') || (() => { try { return new URL(url).hostname.replace(/^www\./, '') } catch { return '' } })()
   const publishedRaw = meta(html, 'article:published_time') || meta(html, 'og:updated_time') || ''
+  const ogTitle = meta(html, 'og:title') || (html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1] || '').trim()
+  const ogDesc = meta(html, 'og:description') || meta(html, 'description') || ''
 
-  // 3) Plain text for the model
+  // 3) Plain text for the model / for the no-key fallback
   const text = html
     .replace(/<script[\s\S]*?<\/script>/gi, ' ')
     .replace(/<style[\s\S]*?<\/style>/gi, ' ')
@@ -58,6 +59,17 @@ export default async function handler(req, res) {
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 14000)
+
+  // No AI key → still return the extracted content (source/title/image/body),
+  // just untranslated. The admin can translate it with the ✦ button afterward.
+  if (!key) {
+    const extracted = { title: ogTitle, excerpt: ogDesc, body: text.slice(0, 6000), tag: '' }
+    return res.status(200).json({
+      image, sourceUrl: url, source, date: publishedRaw || '',
+      translated: false,
+      he: extracted, en: extracted,
+    })
+  }
 
   const prompt = `You are extracting a news article / publication from raw web page text and translating it.
 Page URL: ${url}

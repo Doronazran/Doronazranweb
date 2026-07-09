@@ -788,7 +788,7 @@ export default function Admin() {
                                     if (data.date) updateField(code, `${list.path}.${i}.date`, data.date)
                                     updateField(code, `${list.path}.${i}.sourceUrl`, data.sourceUrl || val)
                                   })
-                                  flash('✓ הכתבה יובאה ותורגמה אוטומטית')
+                                  flash(data.translated === false ? '✓ הכתבה יובאה — לחצו ✦ לתרגום' : '✓ הכתבה יובאה ותורגמה אוטומטית')
                                 } catch {
                                   flash('שגיאת רשת בייבוא')
                                 }
