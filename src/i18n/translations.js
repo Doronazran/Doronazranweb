@@ -210,7 +210,7 @@
         {
           name: 'דורון אזרן',
           role: 'מייסד ומנכ"ל',
-          bio: 'מומחה AI ושרשרת אספקה עם ניסיון בהובלת טרנספורמציות דיגיטליות בארגונים מובילים.',
+          bio: 'מומחה AI ושרשרת אספקה. הוביל סדנאות והטמעות בחברות פארמה, לוגיסטיקה וייצור מובילות — ופיתח כלי AI לשרשרת האספקה.',
           avatar: '',
           linkedin: '',
           isDoron: true,
@@ -440,8 +440,9 @@
       name: 'Doron',
       role: 'AI · Supply Chain · Innovation Expert',
       bio: [
-        'A rare blend of academic knowledge and hands-on experience leading digital transformation in leading organizations.',
-        'I help organizations turn AI from buzzword into a real growth engine — through workshops, talks and tools that work on the ground.',
+        'An expert in AI, supply chain and innovation. I blend academic knowledge with hands-on experience leading digital transformations at leading organizations across pharma, logistics and manufacturing.',
+        'I have delivered workshops and talks to supply chain, operations and procurement leaders at companies like Netafim, Keter, SK Pharma, Gamida Cell and DSV — and built AI tools that work on the ground: a contract analyzer, shipment tracker, supplier finder and more.',
+        'My goal is singular: turn AI from a buzzword into a measurable growth engine in every organization.',
       ],
       cta: "Let's Connect",
     },
