@@ -667,8 +667,8 @@ export default function Admin() {
         })()}
 
         {/* ── schema sections (filtered by active page) ── */}
-        {schema.filter((s) => s.pages?.includes(activePage)).map((section) => (
-          <section key={section.title} className="admin__card">
+        {schema.filter((s) => s.pages?.includes(activePage)).map((section, sIdx) => (
+          <section key={`${section.title}-${sIdx}`} className="admin__card">
             <h2>{section.title}</h2>
 
             {/* simple fields */}
